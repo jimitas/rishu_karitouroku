@@ -297,6 +297,58 @@
         color: #666;
     }
 
+    /* 認証エラースタイル */
+    #auth-error-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #f8f9fa;
+        z-index: 1000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .auth-error {
+        background: white;
+        border: 2px solid #dc3545;
+        border-radius: 12px;
+        padding: 40px;
+        max-width: 500px;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .auth-error h3 {
+        color: #dc3545;
+        margin-bottom: 20px;
+        font-size: 1.5em;
+    }
+
+    .auth-error p {
+        color: #666;
+        margin-bottom: 15px;
+        line-height: 1.6;
+    }
+
+    .retry-button {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        margin-top: 20px;
+        transition: background-color 0.3s;
+    }
+
+    .retry-button:hover {
+        background: #0056b3;
+    }
+
     .error {
         background: #ffebee;
         color: #c62828;

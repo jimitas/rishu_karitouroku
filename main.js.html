@@ -66,23 +66,44 @@
             });
         },
 
-        // 学生データの読み込み
+        // 学生データの読み込み（メール認証ベース）
         loadStudentData: function() {
             return new Promise((resolve, reject) => {
-                DataLoader.getStudentInfo(
-                    Constants.STUDENT.DEFAULT_ID,
-                    (student) => {
-                        if (student) {
-                            this.setState('studentData', student);
-                            StudentInfo.display(student);
-                            this.state.isLoading.student = false;
-                            resolve(student);
+                // まずログインユーザーのメールアドレスを取得
+                DataLoader.getCurrentUserEmail(
+                    (userResult) => {
+                        if (userResult.success) {
+                            // メールアドレスから学生情報を取得
+                            DataLoader.getStudentInfoByEmail(
+                                userResult.email,
+                                (studentResult) => {
+                                    if (studentResult.success) {
+                                        this.setState('studentData', studentResult.student);
+                                        this.setState('currentUserEmail', userResult.email);
+                                        StudentInfo.display(studentResult.student);
+                                        this.state.isLoading.student = false;
+                                        resolve(studentResult.student);
+                                    } else {
+                                        this.state.isLoading.student = false;
+                                        this.showAuthenticationError(studentResult.message);
+                                        reject(new Error(studentResult.message));
+                                    }
+                                },
+                                (error) => {
+                                    this.state.isLoading.student = false;
+                                    this.showAuthenticationError('学生情報の取得に失敗しました: ' + error.message);
+                                    reject(error);
+                                }
+                            );
                         } else {
-                            reject(new Error(Constants.UI.ERROR_MESSAGES.STUDENT_NOT_FOUND));
+                            this.state.isLoading.student = false;
+                            this.showAuthenticationError(userResult.message);
+                            reject(new Error(userResult.message));
                         }
                     },
                     (error) => {
                         this.state.isLoading.student = false;
+                        this.showAuthenticationError('ユーザー認証に失敗しました: ' + error.message);
                         reject(error);
                     }
                 );
@@ -121,8 +142,14 @@
         // 履修登録データの読み込み
         loadRegistrationData: function() {
             return new Promise((resolve, reject) => {
+                const studentId = this.state.studentData.id;
+                if (!studentId) {
+                    reject(new Error('学生情報が読み込まれていません'));
+                    return;
+                }
+
                 DataLoader.getStudentRegistrations(
-                    Constants.STUDENT.DEFAULT_ID,
+                    studentId,
                     (registrations) => {
                         // 新しいデータ構造では、registrations配列に既に科目名とステータスが含まれている
                         const registeredSubjects = registrations.map(reg => ({
@@ -229,6 +256,31 @@
                 return error.message;
             }
             return Constants.UI.ERROR_MESSAGES.GENERAL_ERROR;
+        },
+
+        // 認証エラーの表示
+        showAuthenticationError: function(message) {
+            console.error('認証エラー:', message);
+
+            // UI上にエラーメッセージを表示
+            const errorContainer = document.getElementById('auth-error-container');
+            if (errorContainer) {
+                errorContainer.innerHTML = `
+                    <div class="auth-error">
+                        <h3>🔒 アクセスが制限されています</h3>
+                        <p>${message}</p>
+                        <p>このシステムは登録済み学生のみご利用いただけます。</p>
+                        <button onclick="App.refresh()" class="retry-button">再試行</button>
+                    </div>
+                `;
+                errorContainer.style.display = 'block';
+            }
+
+            // コンテンツエリアを非表示
+            const contentArea = document.getElementById('main-content');
+            if (contentArea) {
+                contentArea.style.display = 'none';
+            }
         },
 
         // 未保存の変更があるかチェック

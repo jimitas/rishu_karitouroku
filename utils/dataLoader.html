@@ -13,7 +13,31 @@
         },
 
         /**
-         * 学生情報を取得
+         * 現在ログインしているユーザーのメールアドレスを取得
+         */
+        getCurrentUserEmail: function(successCallback, errorCallback) {
+            this.callGAS(
+                'getCurrentUserEmail',
+                [],
+                successCallback,
+                errorCallback || this.defaultErrorHandler
+            );
+        },
+
+        /**
+         * メールアドレスから学生情報を取得
+         */
+        getStudentInfoByEmail: function(email, successCallback, errorCallback) {
+            this.callGAS(
+                'getStudentInfoByEmail',
+                [email],
+                successCallback,
+                errorCallback || this.defaultErrorHandler
+            );
+        },
+
+        /**
+         * 学生情報を取得（学籍番号ベース・旧関数）
          */
         getStudentInfo: function(studentId, successCallback, errorCallback) {
             this.callGAS(

@@ -50,7 +50,11 @@
 
         // 履修登録
         register: function(subjectId) {
-            const studentId = Constants.STUDENT.DEFAULT_ID;
+            const studentId = App.state.studentData.id;
+            if (!studentId) {
+                alert('学生情報が読み込まれていません。');
+                return;
+            }
             const subject = subjectData.find(s => s.id === subjectId);
 
             if (subject && confirm(Constants.UI.CONFIRM_MESSAGES.REGISTER(subject.name))) {
@@ -74,7 +78,11 @@
 
         // 履修取消
         unregister: function(subjectId) {
-            const studentId = Constants.STUDENT.DEFAULT_ID;
+            const studentId = App.state.studentData.id;
+            if (!studentId) {
+                alert('学生情報が読み込まれていません。');
+                return;
+            }
             const subject = registeredSubjects.find(s => s.id === subjectId);
 
             if (subject && confirm(Constants.UI.CONFIRM_MESSAGES.UNREGISTER(subject.name))) {

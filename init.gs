@@ -1,6 +1,64 @@
 // データアクセス層: スプレッドシートとのデータ操作を担当
 
 /**
+ * 現在ログインしているユーザーのメールアドレスを取得
+ */
+function getCurrentUserEmail() {
+  try {
+    const user = Session.getActiveUser();
+    const email = user.getEmail();
+
+    if (!email) {
+      throw new Error('ユーザー情報を取得できませんでした。');
+    }
+
+    return {
+      success: true,
+      email: email,
+      message: 'ユーザー認証成功'
+    };
+  } catch (error) {
+    return {
+      success: false,
+      email: null,
+      message: 'ユーザー認証に失敗しました: ' + error.message
+    };
+  }
+}
+
+/**
+ * メールアドレスから学生情報を取得
+ */
+function getStudentInfoByEmail(email) {
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = spreadsheet.getSheetByName('履修情報');
+  const data = sheet.getDataRange().getValues();
+
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0] === email) { // A列（メールアドレス）と照合
+      return {
+        success: true,
+        student: {
+          email: data[i][0],     // メールアドレス
+          id: data[i][1],        // 学籍番号
+          name: data[i][5],      // 氏名
+          grade: data[i][2],     // 学年
+          class: data[i][3],     // クラス
+          number: data[i][4]     // 番号
+        },
+        message: '学生情報が見つかりました。'
+      };
+    }
+  }
+
+  return {
+    success: false,
+    student: null,
+    message: 'このメールアドレスは履修情報に登録されていません。管理者にお問い合わせください。'
+  };
+}
+
+/**
  * 学生情報を取得（履修情報シートから）
  */
 function getStudentInfo(studentId) {
