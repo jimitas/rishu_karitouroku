@@ -60,8 +60,7 @@
                     (result) => {
                         if (result.success) {
                             alert(result.message);
-                            this.loadRegistrations();
-                            SubjectList.load();
+                            this.onRegistrationChange('register', subject);
                         } else {
                             alert(`${Constants.UI.ERROR_MESSAGES.GENERAL_ERROR}: ${result.message}`);
                         }
@@ -85,8 +84,7 @@
                     (result) => {
                         if (result.success) {
                             alert(result.message);
-                            this.loadRegistrations();
-                            SubjectList.load();
+                            this.onRegistrationChange('unregister', subject);
                         } else {
                             alert(`${Constants.UI.ERROR_MESSAGES.GENERAL_ERROR}: ${result.message}`);
                         }
@@ -95,6 +93,20 @@
                         alert(`${Constants.UI.ERROR_MESSAGES.GENERAL_ERROR}: ${error.message}`);
                     }
                 );
+            }
+        },
+
+        // 履修状況変更時のコンポーネント間連携
+        onRegistrationChange: function(action, subject) {
+            console.log(`Registration change: ${action}`, subject);
+
+            // Appの状態管理を使用している場合
+            if (window.App) {
+                App.refresh();
+            } else {
+                // フォールバック: 個別にリロード
+                this.loadRegistrations();
+                SubjectList.load();
             }
         }
     };

@@ -9,31 +9,26 @@
 <?!= include('components/summary'); ?>
 <?!= include('components/tabNavigation'); ?>
 
+<!-- メインアプリケーション -->
+<?!= include('main.js'); ?>
+
 <script>
-    // グローバル変数
+    // グローバル変数（互換性維持のため）
     let studentData = {};
     let subjectData = [];
     let registeredSubjects = [];
 
-    // ページ読み込み時の初期化
-    document.addEventListener('DOMContentLoaded', function() {
-        TabNavigation.init();
-        StudentInfo.load();
-        SubjectList.load();
-        Registration.loadRegistrations();
-    });
-
     // 旧関数名との互換性維持（段階的移行のため）
     function loadStudentInfo() {
-        StudentInfo.load();
+        App.loadStudentData();
     }
 
     function loadSubjects() {
-        SubjectList.load();
+        App.loadSubjectData();
     }
 
     function loadRegistrations() {
-        Registration.loadRegistrations();
+        App.loadRegistrationData();
     }
 
     function displayAvailableSubjects() {
@@ -54,5 +49,10 @@
 
     function unregisterSubject(subjectId) {
         Registration.unregister(subjectId);
+    }
+
+    // 手動リフレッシュ用のグローバル関数
+    function refreshData() {
+        App.refresh();
     }
 </script>

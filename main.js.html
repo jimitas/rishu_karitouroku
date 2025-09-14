@@ -1,0 +1,257 @@
+<script>
+    // メインアプリケーション管理
+    const App = {
+        // グローバル状態管理
+        state: {
+            studentData: {},
+            subjectData: [],
+            registeredSubjects: [],
+            isLoading: {
+                student: false,
+                subjects: false,
+                registrations: false
+            },
+            currentTab: 'available'
+        },
+
+        // アプリケーション初期化
+        init: function() {
+            console.log('履修登録システム開始...');
+
+            // DOM読み込み完了後の処理
+            document.addEventListener('DOMContentLoaded', () => {
+                this.setupEventListeners();
+                this.loadInitialData();
+                TabNavigation.init();
+            });
+        },
+
+        // イベントリスナーの設定
+        setupEventListeners: function() {
+            // ページ離脱時の警告（未保存の変更がある場合）
+            window.addEventListener('beforeunload', (e) => {
+                if (this.hasUnsavedChanges()) {
+                    e.preventDefault();
+                    e.returnValue = '';
+                }
+            });
+
+            // キーボードショートカット
+            document.addEventListener('keydown', (e) => {
+                // Ctrl+R で手動リフレッシュ
+                if (e.ctrlKey && e.key === 'r') {
+                    e.preventDefault();
+                    this.refresh();
+                }
+            });
+        },
+
+        // 初期データの読み込み
+        loadInitialData: function() {
+            this.state.isLoading.student = true;
+            this.state.isLoading.subjects = true;
+            this.state.isLoading.registrations = true;
+
+            // 並列でデータを読み込み
+            Promise.all([
+                this.loadStudentData(),
+                this.loadSubjectData(),
+                this.loadRegistrationData()
+            ]).then(() => {
+                console.log('全データの読み込み完了');
+                this.onDataLoadComplete();
+            }).catch((error) => {
+                console.error('データ読み込みエラー:', error);
+                this.handleGlobalError(error);
+            });
+        },
+
+        // 学生データの読み込み
+        loadStudentData: function() {
+            return new Promise((resolve, reject) => {
+                DataLoader.getStudentInfo(
+                    Constants.STUDENT.DEFAULT_ID,
+                    (student) => {
+                        if (student) {
+                            this.setState('studentData', student);
+                            StudentInfo.display(student);
+                            this.state.isLoading.student = false;
+                            resolve(student);
+                        } else {
+                            reject(new Error(Constants.UI.ERROR_MESSAGES.STUDENT_NOT_FOUND));
+                        }
+                    },
+                    (error) => {
+                        this.state.isLoading.student = false;
+                        reject(error);
+                    }
+                );
+            });
+        },
+
+        // 科目データの読み込み
+        loadSubjectData: function() {
+            return new Promise((resolve, reject) => {
+                DataLoader.getAvailableSubjects(
+                    this.state.studentData.grade || '2',
+                    Constants.STUDENT.DEFAULT_ID,
+                    (subjects) => {
+                        const formattedSubjects = subjects.map(subject => ({
+                            id: subject.id,
+                            name: subject.name,
+                            credits: subject.credits,
+                            grade: subject.targetGrade,
+                            type: subject.type,
+                            condition: subject.condition,
+                            available: true
+                        }));
+
+                        this.setState('subjectData', formattedSubjects);
+                        this.state.isLoading.subjects = false;
+                        resolve(formattedSubjects);
+                    },
+                    (error) => {
+                        this.state.isLoading.subjects = false;
+                        reject(error);
+                    }
+                );
+            });
+        },
+
+        // 履修登録データの読み込み
+        loadRegistrationData: function() {
+            return new Promise((resolve, reject) => {
+                DataLoader.getStudentRegistrations(
+                    Constants.STUDENT.DEFAULT_ID,
+                    (registrations) => {
+                        const subjectIds = registrations.map(reg => reg.subjectId);
+
+                        if (subjectIds.length > 0) {
+                            DataLoader.getSubjects(
+                                (subjects) => {
+                                    const registeredSubjects = subjects
+                                        .filter(subject => subjectIds.includes(subject.id))
+                                        .map(subject => ({
+                                            id: subject.id,
+                                            name: subject.name,
+                                            credits: subject.credits,
+                                            type: subject.type
+                                        }));
+
+                                    this.setState('registeredSubjects', registeredSubjects);
+                                    this.state.isLoading.registrations = false;
+                                    resolve(registeredSubjects);
+                                },
+                                reject
+                            );
+                        } else {
+                            this.setState('registeredSubjects', []);
+                            this.state.isLoading.registrations = false;
+                            resolve([]);
+                        }
+                    },
+                    (error) => {
+                        this.state.isLoading.registrations = false;
+                        reject(error);
+                    }
+                );
+            });
+        },
+
+        // 全データ読み込み完了時の処理
+        onDataLoadComplete: function() {
+            // ローディング状態を非表示
+            DataLoader.hideLoading(Constants.ELEMENTS.LOADING_AVAILABLE);
+            DataLoader.hideLoading(Constants.ELEMENTS.LOADING_REGISTERED);
+
+            // 各コンポーネントの表示を更新
+            SubjectList.displayAvailable();
+            SubjectList.displayRegistered();
+            Summary.update();
+
+            // UI要素を表示
+            document.getElementById(Constants.ELEMENTS.AVAILABLE_SUBJECTS).style.display = 'grid';
+            document.getElementById(Constants.ELEMENTS.REGISTERED_SUBJECTS).style.display = 'grid';
+        },
+
+        // 状態の更新（ReactのsetStateのような機能）
+        setState: function(key, value) {
+            const oldValue = this.state[key];
+            this.state[key] = value;
+
+            // 状態変更の通知（デバッグ用）
+            console.log(`State changed: ${key}`, { old: oldValue, new: value });
+
+            // 状態変更に応じた処理
+            this.onStateChange(key, value, oldValue);
+        },
+
+        // 状態変更時の処理
+        onStateChange: function(key, newValue, oldValue) {
+            switch (key) {
+                case 'registeredSubjects':
+                    // グローバル変数も更新（互換性維持）
+                    registeredSubjects = newValue;
+                    break;
+                case 'subjectData':
+                    subjectData = newValue;
+                    break;
+                case 'studentData':
+                    studentData = newValue;
+                    break;
+            }
+        },
+
+        // データの手動リフレッシュ
+        refresh: function() {
+            console.log('データをリフレッシュ中...');
+            this.loadInitialData();
+        },
+
+        // グローバルエラーハンドラー
+        handleGlobalError: function(error) {
+            console.error('アプリケーションエラー:', error);
+
+            // ユーザーに分かりやすいエラーメッセージを表示
+            const errorMessage = this.getErrorMessage(error);
+            alert(`エラーが発生しました: ${errorMessage}`);
+        },
+
+        // エラーメッセージの取得
+        getErrorMessage: function(error) {
+            if (error.message) {
+                return error.message;
+            }
+            return Constants.UI.ERROR_MESSAGES.GENERAL_ERROR;
+        },
+
+        // 未保存の変更があるかチェック
+        hasUnsavedChanges: function() {
+            // 現在は常にfalse（将来の機能拡張用）
+            return false;
+        },
+
+        // アプリケーション状態の取得（デバッグ用）
+        getState: function() {
+            return { ...this.state };
+        },
+
+        // パフォーマンス計測
+        startPerformanceMeasure: function(name) {
+            performance.mark(`${name}-start`);
+        },
+
+        endPerformanceMeasure: function(name) {
+            performance.mark(`${name}-end`);
+            performance.measure(name, `${name}-start`, `${name}-end`);
+            const measure = performance.getEntriesByName(name)[0];
+            console.log(`Performance: ${name} took ${measure.duration.toFixed(2)}ms`);
+        }
+    };
+
+    // アプリケーション開始
+    App.init();
+
+    // グローバルに公開（デバッグ用）
+    window.App = App;
+</script>
