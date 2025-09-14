@@ -59,10 +59,42 @@
 
     // タブ切り替え用のグローバル関数（HTMLから呼び出し用）
     function showTab(tabName) {
+        // DOMContentLoadedを待ってからTabNavigationを呼び出す
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                showTab(tabName);
+            });
+            return;
+        }
+
         if (window.TabNavigation && TabNavigation.showTab) {
             TabNavigation.showTab(tabName);
         } else {
             console.error('TabNavigationコンポーネントが読み込まれていません');
+            console.log('利用可能なオブジェクト:', Object.keys(window).filter(k => k.includes('Tab')));
         }
     }
+
+    // DOM読み込み完了後に実行される初期化
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOMContentLoaded: すべてのスクリプトが読み込まれました');
+        console.log('TabNavigation available:', !!window.TabNavigation);
+
+        // TabNavigationが利用可能かチェック
+        if (window.TabNavigation) {
+            console.log('TabNavigation methods:', Object.keys(TabNavigation));
+        }
+
+        // タブボタンにイベントリスナーを追加
+        const tabButtons = document.querySelectorAll('.tab-button');
+        tabButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const tabName = this.getAttribute('data-tab');
+                console.log('タブクリック:', tabName);
+                if (tabName) {
+                    showTab(tabName);
+                }
+            });
+        });
+    });
 </script>
