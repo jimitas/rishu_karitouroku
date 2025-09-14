@@ -349,6 +349,58 @@
         background: #0056b3;
     }
 
+    .help-button {
+        background: #6c757d;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        margin-top: 20px;
+        margin-left: 10px;
+        transition: background-color 0.3s;
+    }
+
+    .help-button:hover {
+        background: #545b62;
+    }
+
+    .auth-error-actions {
+        margin-top: 20px;
+    }
+
+    /* 認証ローディング */
+    .auth-loading {
+        background: white;
+        border: 2px solid #007bff;
+        border-radius: 12px;
+        padding: 40px;
+        max-width: 400px;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #007bff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 20px;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .auth-loading p {
+        color: #007bff;
+        font-weight: 500;
+    }
+
     .error {
         background: #ffebee;
         color: #c62828;

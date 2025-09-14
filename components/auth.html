@@ -1,0 +1,210 @@
+<script>
+    // 認証管理コンポーネント
+    const Auth = {
+        // 認証状態
+        state: {
+            isAuthenticated: false,
+            currentUser: null,
+            studentData: null,
+            isLoading: false
+        },
+
+        // 認証初期化
+        init: function() {
+            console.log('認証システムを初期化中...');
+            this.authenticate();
+        },
+
+        // 認証処理
+        authenticate: function() {
+            this.state.isLoading = true;
+            this.showLoadingMessage('ユーザー認証中...');
+
+            return new Promise((resolve, reject) => {
+                // まずログインユーザーのメールアドレスを取得
+                DataLoader.getCurrentUserEmail(
+                    (userResult) => {
+                        if (userResult.success) {
+                            this.state.currentUser = {
+                                email: userResult.email
+                            };
+                            console.log('ユーザー認証成功:', userResult.email);
+
+                            // メールアドレスから学生情報を取得
+                            this.getStudentByEmail(userResult.email)
+                                .then((studentData) => {
+                                    this.state.isAuthenticated = true;
+                                    this.state.studentData = studentData;
+                                    this.state.isLoading = false;
+                                    console.log('学生認証成功:', studentData.name);
+                                    this.hideLoadingMessage();
+                                    this.notifyAuthStateChanged();
+                                    resolve(studentData);
+                                })
+                                .catch((error) => {
+                                    this.state.isLoading = false;
+                                    this.handleAuthenticationError(error.message);
+                                    reject(error);
+                                });
+                        } else {
+                            this.state.isLoading = false;
+                            const errorMsg = userResult.message || 'ユーザー認証に失敗しました';
+                            this.handleAuthenticationError(errorMsg);
+                            reject(new Error(errorMsg));
+                        }
+                    },
+                    (error) => {
+                        this.state.isLoading = false;
+                        const errorMsg = 'ユーザー認証に失敗しました: ' + error.message;
+                        this.handleAuthenticationError(errorMsg);
+                        reject(error);
+                    }
+                );
+            });
+        },
+
+        // メールアドレスから学生情報を取得
+        getStudentByEmail: function(email) {
+            return new Promise((resolve, reject) => {
+                DataLoader.getStudentInfoByEmail(
+                    email,
+                    (studentResult) => {
+                        if (studentResult.success) {
+                            resolve(studentResult.student);
+                        } else {
+                            reject(new Error(studentResult.message));
+                        }
+                    },
+                    (error) => {
+                        reject(new Error('学生情報の取得に失敗しました: ' + error.message));
+                    }
+                );
+            });
+        },
+
+        // 認証エラーの処理
+        handleAuthenticationError: function(message) {
+            console.error('認証エラー:', message);
+            this.showAuthenticationError(message);
+        },
+
+        // 認証エラー画面の表示
+        showAuthenticationError: function(message) {
+            const errorContainer = document.getElementById('auth-error-container');
+            if (errorContainer) {
+                errorContainer.innerHTML = `
+                    <div class="auth-error">
+                        <h3>🔒 アクセスが制限されています</h3>
+                        <p>${message}</p>
+                        <p>このシステムは登録済み学生のみご利用いただけます。</p>
+                        <div class="auth-error-actions">
+                            <button onclick="Auth.retry()" class="retry-button">再試行</button>
+                            <button onclick="Auth.showHelp()" class="help-button">ヘルプ</button>
+                        </div>
+                    </div>
+                `;
+                errorContainer.style.display = 'block';
+            }
+
+            // メインコンテンツを非表示
+            this.hideMainContent();
+        },
+
+        // ローディングメッセージの表示
+        showLoadingMessage: function(message) {
+            const errorContainer = document.getElementById('auth-error-container');
+            if (errorContainer) {
+                errorContainer.innerHTML = `
+                    <div class="auth-loading">
+                        <div class="loading-spinner"></div>
+                        <p>${message}</p>
+                    </div>
+                `;
+                errorContainer.style.display = 'block';
+            }
+
+            this.hideMainContent();
+        },
+
+        // ローディングメッセージを非表示
+        hideLoadingMessage: function() {
+            const errorContainer = document.getElementById('auth-error-container');
+            if (errorContainer) {
+                errorContainer.style.display = 'none';
+            }
+
+            this.showMainContent();
+        },
+
+        // メインコンテンツを非表示
+        hideMainContent: function() {
+            const contentArea = document.getElementById('main-content');
+            if (contentArea) {
+                contentArea.style.display = 'none';
+            }
+        },
+
+        // メインコンテンツを表示
+        showMainContent: function() {
+            const contentArea = document.getElementById('main-content');
+            if (contentArea) {
+                contentArea.style.display = 'block';
+            }
+        },
+
+        // 認証の再試行
+        retry: function() {
+            console.log('認証を再試行中...');
+            this.state.isAuthenticated = false;
+            this.state.currentUser = null;
+            this.state.studentData = null;
+            this.authenticate();
+        },
+
+        // ヘルプ表示
+        showHelp: function() {
+            alert(`ヘルプ情報:
+
+1. 学校のGoogleアカウントでログインしていることを確認してください
+2. ブラウザの設定でCookieとJavaScriptが有効になっていることを確認してください
+3. 問題が続く場合は、管理者にお問い合わせください
+
+お問い合わせ先: システム管理者`);
+        },
+
+        // 現在の認証状態を取得
+        getAuthState: function() {
+            return {
+                isAuthenticated: this.state.isAuthenticated,
+                currentUser: this.state.currentUser,
+                studentData: this.state.studentData,
+                isLoading: this.state.isLoading
+            };
+        },
+
+        // 学生IDを取得（他のコンポーネント用）
+        getCurrentStudentId: function() {
+            return this.state.studentData ? this.state.studentData.id : null;
+        },
+
+        // 学生情報を取得（他のコンポーネント用）
+        getCurrentStudentData: function() {
+            return this.state.studentData;
+        },
+
+        // 認証が完了しているかチェック
+        isReady: function() {
+            return this.state.isAuthenticated && !this.state.isLoading;
+        },
+
+        // 認証状態変更時のコールバック（App.jsから設定）
+        onAuthStateChanged: null,
+
+        // 認証状態変更を通知
+        notifyAuthStateChanged: function() {
+            if (this.onAuthStateChanged && typeof this.onAuthStateChanged === 'function') {
+                this.onAuthStateChanged(this.getAuthState());
+            }
+        }
+    };
+</script>
