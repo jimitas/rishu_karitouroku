@@ -1,0 +1,45 @@
+<script>
+    // 履修状況サマリーコンポーネント
+    const Summary = {
+        // サマリーの更新
+        update: function() {
+            const totalCredits = registeredSubjects.reduce((sum, subject) => sum + subject.credits, 0);
+            const requiredCount = registeredSubjects.filter(s => s.type === '必修').length;
+            const electiveCount = registeredSubjects.filter(s => s.type === '選択').length;
+
+            document.getElementById('total-credits').textContent = totalCredits;
+            document.getElementById('required-subjects').textContent = requiredCount;
+            document.getElementById('elective-subjects').textContent = electiveCount;
+            document.getElementById('graduation-progress').textContent = Math.round((totalCredits / 74) * 100) + '%';
+        },
+
+        // 詳細な単位計算（将来の拡張用）
+        calculateDetailedStats: function() {
+            const stats = {
+                totalCredits: 0,
+                requiredCredits: 0,
+                electiveCredits: 0,
+                bySubject: {},
+                byGrade: {}
+            };
+
+            registeredSubjects.forEach(subject => {
+                stats.totalCredits += subject.credits;
+
+                if (subject.type === '必修') {
+                    stats.requiredCredits += subject.credits;
+                } else {
+                    stats.electiveCredits += subject.credits;
+                }
+
+                // 教科別集計
+                if (!stats.bySubject[subject.subject]) {
+                    stats.bySubject[subject.subject] = 0;
+                }
+                stats.bySubject[subject.subject] += subject.credits;
+            });
+
+            return stats;
+        }
+    };
+</script>

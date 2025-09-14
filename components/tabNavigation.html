@@ -1,0 +1,59 @@
+<script>
+    // タブナビゲーションコンポーネント
+    const TabNavigation = {
+        // タブ切り替え
+        showTab: function(tabName) {
+            // すべてのタブコンテンツを非表示
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+
+            // すべてのタブボタンを非アクティブ
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+
+            // 選択されたタブを表示
+            document.getElementById(tabName + '-tab').classList.add('active');
+            event.target.classList.add('active');
+        },
+
+        // タブの初期化
+        init: function() {
+            // デフォルトで最初のタブをアクティブに
+            const firstTab = document.querySelector('.tab-button');
+            if (firstTab) {
+                firstTab.classList.add('active');
+            }
+
+            const firstTabContent = document.querySelector('.tab-content');
+            if (firstTabContent) {
+                firstTabContent.classList.add('active');
+            }
+        },
+
+        // 動的なタブ追加（将来の拡張用）
+        addTab: function(tabId, tabTitle, tabContent) {
+            // タブボタンを追加
+            const tabContainer = document.querySelector('.tab-container');
+            const tabButton = document.createElement('button');
+            tabButton.className = 'tab-button';
+            tabButton.textContent = tabTitle;
+            tabButton.onclick = () => this.showTab(tabId);
+            tabContainer.appendChild(tabButton);
+
+            // タブコンテンツを追加
+            const contentArea = document.querySelector('.content-area');
+            const tabContentDiv = document.createElement('div');
+            tabContentDiv.id = tabId + '-tab';
+            tabContentDiv.className = 'tab-content';
+            tabContentDiv.innerHTML = tabContent;
+            contentArea.appendChild(tabContentDiv);
+        }
+    };
+
+    // グローバル関数として公開（HTMLから呼び出し可能にするため）
+    function showTab(tabName) {
+        TabNavigation.showTab(tabName);
+    }
+</script>

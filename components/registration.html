@@ -1,0 +1,97 @@
+<script>
+    // 履修登録・取消コンポーネント
+    const Registration = {
+        // 履修登録情報の読み込み
+        loadRegistrations: function() {
+            const studentId = 'S2023001'; // 仮の学生ID
+
+            // まず履修登録データを取得
+            google.script.run
+                .withSuccessHandler(function(registrations) {
+                    // 次に科目詳細を取得
+                    const subjectIds = registrations.map(reg => reg.subjectId);
+
+                    if (subjectIds.length > 0) {
+                        google.script.run
+                            .withSuccessHandler(function(subjects) {
+                                registeredSubjects = subjects
+                                    .filter(subject => subjectIds.includes(subject.id))
+                                    .map(subject => ({
+                                        id: subject.id,
+                                        name: subject.name,
+                                        credits: subject.credits,
+                                        type: subject.type
+                                    }));
+
+                                SubjectList.displayRegistered();
+                                Summary.update();
+                                document.getElementById('loading-registered').style.display = 'none';
+                                document.getElementById('registered-subjects').style.display = 'grid';
+                            })
+                            .withFailureHandler(function(error) {
+                                document.getElementById('loading-registered').innerHTML =
+                                    '<div class="error">科目情報の取得エラー: ' + error.message + '</div>';
+                            })
+                            .getSubjects();
+                    } else {
+                        registeredSubjects = [];
+                        SubjectList.displayRegistered();
+                        Summary.update();
+                        document.getElementById('loading-registered').style.display = 'none';
+                        document.getElementById('registered-subjects').style.display = 'grid';
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    document.getElementById('loading-registered').innerHTML =
+                        '<div class="error">履修情報の取得エラー: ' + error.message + '</div>';
+                })
+                .getStudentRegistrations(studentId);
+        },
+
+        // 履修登録
+        register: function(subjectId) {
+            const studentId = 'S2023001'; // 仮の学生ID
+            const subject = subjectData.find(s => s.id === subjectId);
+
+            if (subject && confirm(`${subject.name}を履修登録しますか？`)) {
+                google.script.run
+                    .withSuccessHandler(function(result) {
+                        if (result.success) {
+                            alert(result.message);
+                            Registration.loadRegistrations(); // 履修情報を再読み込み
+                            SubjectList.load(); // 科目情報を再読み込み
+                        } else {
+                            alert('エラー: ' + result.message);
+                        }
+                    })
+                    .withFailureHandler(function(error) {
+                        alert('エラーが発生しました: ' + error.message);
+                    })
+                    .registerSubject(studentId, subjectId);
+            }
+        },
+
+        // 履修取消
+        unregister: function(subjectId) {
+            const studentId = 'S2023001'; // 仮の学生ID
+            const subject = registeredSubjects.find(s => s.id === subjectId);
+
+            if (subject && confirm(`${subject.name}の履修を取り消しますか？`)) {
+                google.script.run
+                    .withSuccessHandler(function(result) {
+                        if (result.success) {
+                            alert(result.message);
+                            Registration.loadRegistrations(); // 履修情報を再読み込み
+                            SubjectList.load(); // 科目情報を再読み込み
+                        } else {
+                            alert('エラー: ' + result.message);
+                        }
+                    })
+                    .withFailureHandler(function(error) {
+                        alert('エラーが発生しました: ' + error.message);
+                    })
+                    .unregisterSubject(studentId, subjectId);
+            }
+        }
+    };
+</script>

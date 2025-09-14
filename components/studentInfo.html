@@ -1,0 +1,34 @@
+<script>
+    // 学生情報コンポーネント
+    const StudentInfo = {
+        // 学生情報の読み込み
+        load: function() {
+            // 仮の学生ID（実際には認証システムから取得）
+            const studentId = 'S2023001';
+
+            google.script.run
+                .withSuccessHandler(function(student) {
+                    if (student) {
+                        studentData = student;
+                        StudentInfo.display(student);
+                    } else {
+                        document.getElementById('student-info').innerHTML =
+                            '<div class="error">学生情報が見つかりません。</div>';
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    document.getElementById('student-info').innerHTML =
+                        '<div class="error">エラー: ' + error.message + '</div>';
+                })
+                .getStudentInfo(studentId);
+        },
+
+        // 学生情報の表示
+        display: function(student) {
+            document.getElementById('student-id').textContent = student.id;
+            document.getElementById('student-name').textContent = student.name;
+            document.getElementById('student-grade').textContent = student.grade + '年生';
+            document.getElementById('student-class').textContent = student.class + 'クラス';
+        }
+    };
+</script>
