@@ -56,7 +56,7 @@
             if (subject && confirm(Constants.UI.CONFIRM_MESSAGES.REGISTER(subject.name))) {
                 DataLoader.registerSubject(
                     studentId,
-                    subjectId,
+                    subject.name, // 科目IDではなく科目名を渡す
                     (result) => {
                         if (result.success) {
                             alert(result.message);
@@ -80,7 +80,7 @@
             if (subject && confirm(Constants.UI.CONFIRM_MESSAGES.UNREGISTER(subject.name))) {
                 DataLoader.unregisterSubject(
                     studentId,
-                    subjectId,
+                    subject.name, // 科目IDではなく科目名を渡す
                     (result) => {
                         if (result.success) {
                             alert(result.message);

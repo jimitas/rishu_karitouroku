@@ -124,31 +124,18 @@
                 DataLoader.getStudentRegistrations(
                     Constants.STUDENT.DEFAULT_ID,
                     (registrations) => {
-                        const subjectIds = registrations.map(reg => reg.subjectId);
+                        // 新しいデータ構造では、registrations配列に既に科目名とステータスが含まれている
+                        const registeredSubjects = registrations.map(reg => ({
+                            id: `REG_${reg.subjectName}`, // 科目名から一意IDを生成
+                            name: reg.subjectName,
+                            status: reg.status,
+                            credits: this.getSubjectCredits(reg.subjectName), // 科目名から単位数を推定
+                            type: this.getSubjectType(reg.subjectName)         // 科目名から種別を推定
+                        }));
 
-                        if (subjectIds.length > 0) {
-                            DataLoader.getSubjects(
-                                (subjects) => {
-                                    const registeredSubjects = subjects
-                                        .filter(subject => subjectIds.includes(subject.id))
-                                        .map(subject => ({
-                                            id: subject.id,
-                                            name: subject.name,
-                                            credits: subject.credits,
-                                            type: subject.type
-                                        }));
-
-                                    this.setState('registeredSubjects', registeredSubjects);
-                                    this.state.isLoading.registrations = false;
-                                    resolve(registeredSubjects);
-                                },
-                                reject
-                            );
-                        } else {
-                            this.setState('registeredSubjects', []);
-                            this.state.isLoading.registrations = false;
-                            resolve([]);
-                        }
+                        this.setState('registeredSubjects', registeredSubjects);
+                        this.state.isLoading.registrations = false;
+                        resolve(registeredSubjects);
                     },
                     (error) => {
                         this.state.isLoading.registrations = false;
@@ -156,6 +143,25 @@
                     }
                 );
             });
+        },
+
+        // 科目名から単位数を推定するヘルパー関数
+        getSubjectCredits: function(subjectName) {
+            // 一般的な単位数の推定（後で詳細設定可能）
+            if (subjectName.includes('体育')) return 1;
+            if (subjectName.includes('保健')) return 1;
+            if (subjectName.includes('美術')) return 2;
+            if (subjectName.includes('総合')) return 1;
+            return 2; // デフォルト
+        },
+
+        // 科目名から種別を推定するヘルパー関数
+        getSubjectType: function(subjectName) {
+            const requiredSubjects = ['現代の国語', '歴史総合', '地理総合', '数学Ⅰ', '科学と人間生活', '体育Ⅰ', '英語コミュニケーションⅠ', '情報Ⅰ'];
+            if (requiredSubjects.some(req => subjectName.includes(req.replace(/ｺﾐｭﾆｹｰｼｮﾝ/g, 'コミュニケーション')))) {
+                return '必修';
+            }
+            return '選択';
         },
 
         // 全データ読み込み完了時の処理

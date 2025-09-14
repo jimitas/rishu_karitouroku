@@ -63,10 +63,10 @@
         /**
          * 履修登録を実行
          */
-        registerSubject: function(studentId, subjectId, successCallback, errorCallback) {
+        registerSubject: function(studentId, subjectName, successCallback, errorCallback) {
             this.callGAS(
                 'registerSubject',
-                [studentId, subjectId],
+                [studentId, subjectName],
                 successCallback,
                 errorCallback || this.defaultErrorHandler
             );
@@ -75,10 +75,10 @@
         /**
          * 履修取消を実行
          */
-        unregisterSubject: function(studentId, subjectId, successCallback, errorCallback) {
+        unregisterSubject: function(studentId, subjectName, successCallback, errorCallback) {
             this.callGAS(
                 'unregisterSubject',
-                [studentId, subjectId],
+                [studentId, subjectName],
                 successCallback,
                 errorCallback || this.defaultErrorHandler
             );
