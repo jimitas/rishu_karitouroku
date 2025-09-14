@@ -1,6 +1,53 @@
 <!-- ユーティリティ関数の読み込み -->
 <script>console.log('🔧 Constants読み込み開始');</script>
-<?!= include('utils\\constants'); ?>
+
+<!-- テスト用: Constantsを直接埋め込み -->
+<script>
+    // 定数・設定値ユーティリティ
+    const Constants = {
+        // 学生関連の定数
+        STUDENT: {
+            DEFAULT_ID: 'S2023001',
+            GRADES: {
+                FIRST: '1',
+                SECOND: '2',
+                THIRD: '3'
+            }
+        },
+        // 科目関連の定数
+        SUBJECT: {
+            TYPES: {
+                REQUIRED: '必修',
+                ELECTIVE: '選択'
+            }
+        },
+        // UI関連の定数
+        UI: {
+            ERROR_MESSAGES: {
+                STUDENT_NOT_FOUND: '学生情報が見つかりません。',
+                AUTH_FAILED: 'ユーザー認証に失敗しました。',
+                EMAIL_NOT_REGISTERED: 'このメールアドレスは履修情報に登録されていません。',
+                GENERAL_ERROR: 'エラーが発生しました。'
+            },
+            CONFIRM_MESSAGES: {
+                REGISTER: (subjectName) => `${subjectName}を履修登録しますか？`,
+                UNREGISTER: (subjectName) => `${subjectName}の履修を取り消しますか？`
+            }
+        },
+        // DOM要素のID
+        ELEMENTS: {
+            STUDENT_ID: 'student-id',
+            STUDENT_NAME: 'student-name',
+            STUDENT_GRADE: 'student-grade',
+            STUDENT_CLASS: 'student-class'
+        }
+    };
+
+    // グローバルスコープに登録
+    window.Constants = Constants;
+    console.log('✅ Constants (直接埋め込み) 登録完了');
+</script>
+
 <script>console.log('🔧 Constants読み込み完了');</script>
 
 <script>console.log('🔧 DataLoader読み込み開始');</script>
@@ -9,11 +56,88 @@
 
 <!-- JavaScriptコンポーネントの読み込み -->
 <script>console.log('🔧 Auth読み込み開始');</script>
-<?!= include('components\\auth'); ?>
+
+<!-- テスト用: Authコンポーネントを最小構成で直接埋め込み -->
+<script>
+    console.log('🔧 Auth直接埋め込み開始');
+
+    // 簡易Authコンポーネント
+    const Auth = {
+        state: {
+            isAuthenticated: false,
+            currentUser: null,
+            studentData: null,
+            isLoading: false
+        },
+
+        init: function() {
+            console.log('🔐 Auth.init() 実行開始');
+            this.authenticate();
+        },
+
+        authenticate: function() {
+            console.log('🔍 認証処理開始 (テスト版)');
+            // テスト用: 固定の認証成功レスポンス
+            setTimeout(() => {
+                console.log('✅ 認証成功 (テスト版)');
+                this.state.isAuthenticated = true;
+                this.state.studentData = {
+                    id: 'TEST001',
+                    name: 'テスト学生',
+                    email: 'test@example.com',
+                    grade: '2',
+                    class: 'A'
+                };
+                this.notifyAuthStateChanged();
+            }, 1000);
+        },
+
+        notifyAuthStateChanged: function() {
+            console.log('📢 認証状態変更通知 (テスト版)');
+            if (this.onAuthStateChanged) {
+                this.onAuthStateChanged({
+                    isAuthenticated: this.state.isAuthenticated,
+                    studentData: this.state.studentData,
+                    currentUser: { email: 'test@example.com' }
+                });
+            }
+        },
+
+        onAuthStateChanged: null
+    };
+
+    // グローバルスコープに登録
+    window.Auth = Auth;
+    console.log('✅ Auth (テスト版直接埋め込み) 登録完了');
+</script>
+
 <script>console.log('🔧 Auth読み込み完了');</script>
 
 <script>console.log('🔧 StudentInfo読み込み開始');</script>
-<?!= include('components\\studentInfo'); ?>
+
+<!-- テスト用: StudentInfoを最小構成で直接埋め込み -->
+<script>
+    const StudentInfo = {
+        display: function(student) {
+            console.log('📋 学生情報表示:', student);
+            if (student) {
+                const setElement = (id, text) => {
+                    const elem = document.getElementById(id);
+                    if (elem) elem.textContent = text;
+                };
+
+                setElement('student-id', student.id || '');
+                setElement('student-name', student.name || '');
+                setElement('student-grade', (student.grade || '') + '年生');
+                setElement('student-class', (student.class || '') + 'クラス');
+            }
+        }
+    };
+
+    window.StudentInfo = StudentInfo;
+    console.log('✅ StudentInfo (テスト版直接埋め込み) 登録完了');
+</script>
+
 <script>console.log('🔧 StudentInfo読み込み完了');</script>
 
 <script>console.log('🔧 SubjectList読み込み開始');</script>
@@ -29,11 +153,401 @@
 <script>console.log('🔧 Summary読み込み完了');</script>
 
 <script>console.log('🔧 TabNavigation読み込み開始');</script>
-<?!= include('components\\tabNavigation'); ?>
+
+<!-- テスト用: TabNavigationを直接埋め込み -->
+<script>
+    const TabNavigation = {
+        showTab: function(tabName) {
+            console.log('🔄 タブ切り替え:', tabName);
+
+            // すべてのタブコンテンツを非表示
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+
+            // すべてのタブボタンを非アクティブ
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+
+            // 選択されたタブを表示
+            const targetTab = document.getElementById(tabName + '-tab');
+            if (targetTab) {
+                targetTab.classList.add('active');
+            }
+
+            // クリックされたボタンをアクティブに（event.targetが利用可能な場合）
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
+        },
+
+        init: function() {
+            console.log('🔧 TabNavigation初期化');
+
+            // デフォルトで最初のタブをアクティブに
+            const firstTab = document.querySelector('.tab-button');
+            if (firstTab) {
+                firstTab.classList.add('active');
+                console.log('✅ 最初のタブボタンをアクティブ化');
+            }
+
+            const firstTabContent = document.querySelector('.tab-content');
+            if (firstTabContent) {
+                firstTabContent.classList.add('active');
+                console.log('✅ 最初のタブコンテンツをアクティブ化');
+            }
+        }
+    };
+
+    window.TabNavigation = TabNavigation;
+    console.log('✅ TabNavigation (テスト版直接埋め込み) 登録完了');
+</script>
+
 <script>console.log('🔧 TabNavigation読み込み完了');</script>
 
-<!-- メインアプリケーション -->
-<?!= include('main'); ?>
+<!-- メインアプリケーション（テスト用直接埋め込み） -->
+<script>console.log('🔧 Main App読み込み開始');</script>
+
+<script>
+    // メインアプリケーション管理（テスト版）
+    const App = {
+        // グローバル状態管理
+        state: {
+            studentData: {},
+            subjectData: [],
+            registeredSubjects: [],
+            isLoading: {
+                student: false,
+                subjects: false,
+                registrations: false
+            },
+            currentTab: 'available'
+        },
+
+        // アプリケーション初期化
+        init: function () {
+            console.log('🚀 履修登録システム開始...');
+            console.log('📋 現在の読み込み状態:', document.readyState);
+
+            // DOM読み込み完了後の処理
+            document.addEventListener('DOMContentLoaded', () => {
+                console.log('✅ DOMContentLoaded: App初期化開始');
+                this.setupEventListeners();
+                this.initializeAuth();
+                if (window.TabNavigation) {
+                    TabNavigation.init();
+                }
+            });
+
+            // 既にDOMが読み込み済みの場合
+            if (document.readyState !== 'loading') {
+                console.log('🔄 DOMは既に読み込み済み、即座に初期化実行');
+                this.setupEventListeners();
+                this.initializeAuth();
+                if (window.TabNavigation) {
+                    TabNavigation.init();
+                }
+            }
+        },
+
+        // 認証システムの初期化
+        initializeAuth: function () {
+            console.log('🔐 認証システム初期化開始');
+            console.log('🔍 Auth オブジェクト確認:', !!window.Auth);
+
+            if (!window.Auth) {
+                console.error('❌ Authコンポーネントが読み込まれていません！');
+                alert('システムエラー: 認証コンポーネントが読み込まれていません。');
+                return;
+            }
+
+            // 認証状態変更時のコールバック設定
+            Auth.onAuthStateChanged = (authState) => {
+                console.log('📢 認証状態変更通知:', authState);
+                if (authState.isAuthenticated && authState.studentData) {
+                    console.log('✅ 認証成功 - アプリ開始');
+                    // 認証成功時：学生データを設定してアプリを開始
+                    this.setState('studentData', authState.studentData);
+                    this.setState('currentUserEmail', authState.currentUser.email);
+                    this.loadInitialData();
+                } else {
+                    console.log('❌ 認証失敗またはデータ不足');
+                }
+            };
+
+            // 認証開始
+            console.log('🚀 Auth.init() 呼び出し');
+            Auth.init();
+        },
+
+        // イベントリスナーの設定
+        setupEventListeners: function () {
+            // ページ離脱時の警告（未保存の変更がある場合）
+            window.addEventListener('beforeunload', (e) => {
+                if (this.hasUnsavedChanges()) {
+                    e.preventDefault();
+                    e.returnValue = '';
+                }
+            });
+
+            // キーボードショートカット
+            document.addEventListener('keydown', (e) => {
+                // Ctrl+R で手動リフレッシュ
+                if (e.ctrlKey && e.key === 'r') {
+                    e.preventDefault();
+                    this.refresh();
+                }
+            });
+        },
+
+        // 初期データの読み込み
+        loadInitialData: function () {
+            console.log('📊 初期データ読み込み開始');
+            this.state.isLoading.student = true;
+            this.state.isLoading.subjects = true;
+            this.state.isLoading.registrations = true;
+
+            // 並列でデータを読み込み
+            Promise.all([
+                this.loadStudentData(),
+                this.loadSubjectData(),
+                this.loadRegistrationData()
+            ]).then(() => {
+                console.log('✅ 全データの読み込み完了');
+                this.onDataLoadComplete();
+            }).catch((error) => {
+                console.error('❌ データ読み込みエラー:', error);
+                this.handleGlobalError(error);
+            });
+        },
+
+        // 学生データの読み込み（認証後）
+        loadStudentData: function () {
+            return new Promise((resolve, reject) => {
+                // 認証済みの学生データが既にあるかチェック
+                if (this.state.studentData && this.state.studentData.id) {
+                    console.log('👤 学生データを表示中:', this.state.studentData);
+                    if (window.StudentInfo) {
+                        StudentInfo.display(this.state.studentData);
+                    }
+                    this.state.isLoading.student = false;
+                    resolve(this.state.studentData);
+                } else {
+                    // 認証されていない場合はエラー
+                    console.error('❌ 学生情報が認証されていません');
+                    this.state.isLoading.student = false;
+                    reject(new Error('学生情報が認証されていません'));
+                }
+            });
+        },
+
+        // 科目データの読み込み
+        loadSubjectData: function () {
+            return new Promise((resolve, reject) => {
+                // 学生データが読み込まれているかチェック
+                if (!this.state.studentData || !this.state.studentData.id) {
+                    console.error('❌ 学生データが読み込まれていません');
+                    this.state.isLoading.subjects = false;
+                    reject(new Error('学生データが読み込まれていません'));
+                    return;
+                }
+
+                console.log('📚 科目データを読み込み中...', {
+                    grade: this.state.studentData.grade,
+                    studentId: this.state.studentData.id
+                });
+
+                if (window.DataLoader) {
+                    DataLoader.getAvailableSubjects(
+                        this.state.studentData.grade || '2',
+                        this.state.studentData.id,
+                        (subjects) => {
+                            console.log('✅ 科目データ取得成功:', subjects);
+                            const formattedSubjects = subjects.map(subject => ({
+                                id: subject.id,
+                                name: subject.name,
+                                credits: subject.credits,
+                                grade: subject.targetGrade,
+                                type: subject.type,
+                                condition: subject.condition,
+                                available: true
+                            }));
+
+                            this.setState('subjectData', formattedSubjects);
+                            this.state.isLoading.subjects = false;
+                            resolve(formattedSubjects);
+                        },
+                        (error) => {
+                            console.error('❌ 科目データ読み込みエラー:', error);
+                            this.state.isLoading.subjects = false;
+                            reject(error);
+                        }
+                    );
+                } else {
+                    console.error('❌ DataLoaderが利用できません');
+                    this.state.isLoading.subjects = false;
+                    reject(new Error('DataLoaderが利用できません'));
+                }
+            });
+        },
+
+        // 履修登録データの読み込み
+        loadRegistrationData: function () {
+            return new Promise((resolve, reject) => {
+                const studentId = this.state.studentData ? this.state.studentData.id : null;
+                if (!studentId) {
+                    console.error('❌ 学生情報が読み込まれていません');
+                    this.state.isLoading.registrations = false;
+                    reject(new Error('学生情報が読み込まれていません'));
+                    return;
+                }
+
+                console.log('📝 履修登録データを読み込み中...', { studentId });
+
+                if (window.DataLoader) {
+                    DataLoader.getStudentRegistrations(
+                        studentId,
+                        (registrations) => {
+                            console.log('✅ 履修登録データ取得成功:', registrations);
+                            const registeredSubjects = registrations.map(reg => ({
+                                id: `REG_${reg.subjectName}`,
+                                name: reg.subjectName,
+                                status: reg.status,
+                                credits: this.getSubjectCredits(reg.subjectName),
+                                type: this.getSubjectType(reg.subjectName)
+                            }));
+
+                            this.setState('registeredSubjects', registeredSubjects);
+                            this.state.isLoading.registrations = false;
+                            resolve(registeredSubjects);
+                        },
+                        (error) => {
+                            console.error('❌ 履修登録データ読み込みエラー:', error);
+                            this.state.isLoading.registrations = false;
+                            reject(error);
+                        }
+                    );
+                } else {
+                    console.error('❌ DataLoaderが利用できません');
+                    this.state.isLoading.registrations = false;
+                    reject(new Error('DataLoaderが利用できません'));
+                }
+            });
+        },
+
+        // 科目名から単位数を推定するヘルパー関数
+        getSubjectCredits: function (subjectName) {
+            if (subjectName.includes('体育')) return 1;
+            if (subjectName.includes('保健')) return 1;
+            if (subjectName.includes('美術')) return 2;
+            if (subjectName.includes('総合')) return 1;
+            return 2;
+        },
+
+        // 科目名から種別を推定するヘルパー関数
+        getSubjectType: function (subjectName) {
+            const requiredSubjects = ['現代の国語', '歴史総合', '地理総合', '数学Ⅰ', '科学と人間生活', '体育Ⅰ', '英語コミュニケーションⅠ', '情報Ⅰ'];
+            if (requiredSubjects.some(req => subjectName.includes(req.replace(/ｺﾐｭﾆｹｰｼｮﾝ/g, 'コミュニケーション')))) {
+                return '必修';
+            }
+            return '選択';
+        },
+
+        // 全データ読み込み完了時の処理
+        onDataLoadComplete: function () {
+            console.log('🎉 全データ読み込み完了 - UI更新開始');
+
+            // 各コンポーネントの表示を更新
+            if (window.SubjectList) {
+                SubjectList.displayAvailable();
+                SubjectList.displayRegistered();
+            }
+            if (window.Summary) {
+                Summary.update();
+            }
+        },
+
+        // 状態の更新（ReactのsetStateのような機能）
+        setState: function (key, value) {
+            const oldValue = this.state[key];
+            this.state[key] = value;
+
+            console.log(`📊 State changed: ${key}`, { old: oldValue, new: value });
+
+            // 状態変更に応じた処理
+            this.onStateChange(key, value, oldValue);
+        },
+
+        // 状態変更時の処理
+        onStateChange: function (key, newValue, oldValue) {
+            switch (key) {
+                case 'registeredSubjects':
+                    // グローバル変数も更新（互換性維持）
+                    if (typeof registeredSubjects !== 'undefined') {
+                        registeredSubjects = newValue;
+                    }
+                    break;
+                case 'subjectData':
+                    if (typeof subjectData !== 'undefined') {
+                        subjectData = newValue;
+                    }
+                    break;
+                case 'studentData':
+                    if (typeof studentData !== 'undefined') {
+                        studentData = newValue;
+                    }
+                    break;
+            }
+        },
+
+        // データの手動リフレッシュ
+        refresh: function () {
+            console.log('🔄 データをリフレッシュ中...');
+            if (window.Auth && Auth.state && Auth.state.isAuthenticated) {
+                this.loadInitialData();
+            } else if (window.Auth) {
+                Auth.init();
+            }
+        },
+
+        // グローバルエラーハンドラー
+        handleGlobalError: function (error) {
+            console.error('❌ アプリケーションエラー:', error);
+
+            // ローディング状態をリセット
+            this.state.isLoading.student = false;
+            this.state.isLoading.subjects = false;
+            this.state.isLoading.registrations = false;
+
+            // ユーザーに分かりやすいエラーメッセージを表示
+            const errorMessage = this.getErrorMessage(error);
+            alert(`エラーが発生しました: ${errorMessage}`);
+        },
+
+        // エラーメッセージの取得
+        getErrorMessage: function (error) {
+            if (error.message) {
+                return error.message;
+            }
+            return 'システムエラーが発生しました';
+        },
+
+        // 未保存の変更があるかチェック
+        hasUnsavedChanges: function () {
+            return false;
+        }
+    };
+
+    // アプリケーション開始
+    App.init();
+
+    // グローバルに公開
+    window.App = App;
+    console.log('✅ App (テスト版直接埋め込み) 登録完了');
+</script>
+
+<script>console.log('🔧 Main App読み込み完了');</script>
 
 <script>
     // グローバル変数（互換性維持のため）
