@@ -50,47 +50,51 @@
 
         // 履修登録
         register: function(subjectId) {
-            const studentId = 'S2023001'; // 仮の学生ID
+            const studentId = Constants.STUDENT.DEFAULT_ID;
             const subject = subjectData.find(s => s.id === subjectId);
 
-            if (subject && confirm(`${subject.name}を履修登録しますか？`)) {
-                google.script.run
-                    .withSuccessHandler(function(result) {
+            if (subject && confirm(Constants.UI.CONFIRM_MESSAGES.REGISTER(subject.name))) {
+                DataLoader.registerSubject(
+                    studentId,
+                    subjectId,
+                    (result) => {
                         if (result.success) {
                             alert(result.message);
-                            Registration.loadRegistrations(); // 履修情報を再読み込み
-                            SubjectList.load(); // 科目情報を再読み込み
+                            this.loadRegistrations();
+                            SubjectList.load();
                         } else {
-                            alert('エラー: ' + result.message);
+                            alert(`${Constants.UI.ERROR_MESSAGES.GENERAL_ERROR}: ${result.message}`);
                         }
-                    })
-                    .withFailureHandler(function(error) {
-                        alert('エラーが発生しました: ' + error.message);
-                    })
-                    .registerSubject(studentId, subjectId);
+                    },
+                    (error) => {
+                        alert(`${Constants.UI.ERROR_MESSAGES.GENERAL_ERROR}: ${error.message}`);
+                    }
+                );
             }
         },
 
         // 履修取消
         unregister: function(subjectId) {
-            const studentId = 'S2023001'; // 仮の学生ID
+            const studentId = Constants.STUDENT.DEFAULT_ID;
             const subject = registeredSubjects.find(s => s.id === subjectId);
 
-            if (subject && confirm(`${subject.name}の履修を取り消しますか？`)) {
-                google.script.run
-                    .withSuccessHandler(function(result) {
+            if (subject && confirm(Constants.UI.CONFIRM_MESSAGES.UNREGISTER(subject.name))) {
+                DataLoader.unregisterSubject(
+                    studentId,
+                    subjectId,
+                    (result) => {
                         if (result.success) {
                             alert(result.message);
-                            Registration.loadRegistrations(); // 履修情報を再読み込み
-                            SubjectList.load(); // 科目情報を再読み込み
+                            this.loadRegistrations();
+                            SubjectList.load();
                         } else {
-                            alert('エラー: ' + result.message);
+                            alert(`${Constants.UI.ERROR_MESSAGES.GENERAL_ERROR}: ${result.message}`);
                         }
-                    })
-                    .withFailureHandler(function(error) {
-                        alert('エラーが発生しました: ' + error.message);
-                    })
-                    .unregisterSubject(studentId, subjectId);
+                    },
+                    (error) => {
+                        alert(`${Constants.UI.ERROR_MESSAGES.GENERAL_ERROR}: ${error.message}`);
+                    }
+                );
             }
         }
     };

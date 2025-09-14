@@ -1,0 +1,124 @@
+<script>
+    // 定数・設定値ユーティリティ
+    const Constants = {
+        // 学生関連の定数
+        STUDENT: {
+            DEFAULT_ID: 'S2023001',  // 仮の学生ID（実際には認証システムから取得）
+            GRADES: {
+                FIRST: '1',
+                SECOND: '2',
+                THIRD: '3'
+            }
+        },
+
+        // 科目関連の定数
+        SUBJECT: {
+            TYPES: {
+                REQUIRED: '必修',
+                ELECTIVE: '選択'
+            },
+            CONDITIONS: {
+                NONE: 'なし'
+            }
+        },
+
+        // 履修関連の定数
+        REGISTRATION: {
+            STATUS: {
+                REGISTERED: '登録済み',
+                CANCELLED: '取消済み',
+                PENDING: '申請中'
+            }
+        },
+
+        // UI関連の定数
+        UI: {
+            LOADING_MESSAGES: {
+                STUDENT: '学生情報を読み込み中...',
+                SUBJECTS: '科目情報を読み込み中...',
+                REGISTRATIONS: '履修情報を読み込み中...'
+            },
+            ERROR_MESSAGES: {
+                STUDENT_NOT_FOUND: '学生情報が見つかりません。',
+                NETWORK_ERROR: 'ネットワークエラーが発生しました。',
+                GENERAL_ERROR: 'エラーが発生しました。'
+            },
+            CONFIRM_MESSAGES: {
+                REGISTER: (subjectName) => `${subjectName}を履修登録しますか？`,
+                UNREGISTER: (subjectName) => `${subjectName}の履修を取り消しますか？`
+            },
+            SUCCESS_MESSAGES: {
+                REGISTER: '履修登録が完了しました。',
+                UNREGISTER: '履修取消が完了しました。'
+            }
+        },
+
+        // 卒業要件関連の定数
+        GRADUATION: {
+            TOTAL_CREDITS_REQUIRED: 74,  // 卒業に必要な総単位数
+            MIN_REQUIRED_SUBJECTS: 10,   // 必修科目の最小数
+            MIN_ELECTIVE_CREDITS: 20     // 選択科目の最小単位数
+        },
+
+        // DOM要素のID
+        ELEMENTS: {
+            STUDENT_INFO: 'student-info',
+            STUDENT_ID: 'student-id',
+            STUDENT_NAME: 'student-name',
+            STUDENT_GRADE: 'student-grade',
+            STUDENT_CLASS: 'student-class',
+
+            LOADING_AVAILABLE: 'loading-available',
+            LOADING_REGISTERED: 'loading-registered',
+
+            AVAILABLE_SUBJECTS: 'available-subjects',
+            REGISTERED_SUBJECTS: 'registered-subjects',
+
+            TOTAL_CREDITS: 'total-credits',
+            REQUIRED_SUBJECTS: 'required-subjects',
+            ELECTIVE_SUBJECTS: 'elective-subjects',
+            GRADUATION_PROGRESS: 'graduation-progress'
+        },
+
+        // CSS クラス名
+        CSS_CLASSES: {
+            SUBJECT_CARD: 'subject-card',
+            SUBJECT_REGISTERED: 'registered',
+            STATUS_BADGE: 'status-badge',
+            STATUS_REGISTERED: 'status-registered',
+            STATUS_AVAILABLE: 'status-available',
+            INFO_TAG: 'info-tag',
+            INFO_TAG_REQUIRED: 'required',
+            INFO_TAG_ELECTIVE: 'elective',
+            BUTTON: 'btn',
+            BUTTON_PRIMARY: 'btn-primary',
+            BUTTON_DANGER: 'btn-danger',
+            ERROR: 'error'
+        },
+
+        // 設定値
+        SETTINGS: {
+            AUTO_SAVE_INTERVAL: 30000,  // 30秒（将来の自動保存機能用）
+            MAX_SUBJECTS_PER_SEMESTER: 8,  // 1学期あたりの最大履修科目数
+            MIN_CREDITS_PER_SEMESTER: 10   // 1学期あたりの最小単位数
+        },
+
+        // バリデーション用の正規表現
+        VALIDATION: {
+            STUDENT_ID_PATTERN: /^S\d{7}$/,  // S + 7桁の数字
+            SUBJECT_ID_PATTERN: /^SUBJ\d{3}$/ // SUBJ + 3桁の数字
+        }
+    };
+
+    // 読み取り専用にするため、オブジェクトをフリーズ
+    Object.freeze(Constants);
+    Object.freeze(Constants.STUDENT);
+    Object.freeze(Constants.SUBJECT);
+    Object.freeze(Constants.REGISTRATION);
+    Object.freeze(Constants.UI);
+    Object.freeze(Constants.GRADUATION);
+    Object.freeze(Constants.ELEMENTS);
+    Object.freeze(Constants.CSS_CLASSES);
+    Object.freeze(Constants.SETTINGS);
+    Object.freeze(Constants.VALIDATION);
+</script>

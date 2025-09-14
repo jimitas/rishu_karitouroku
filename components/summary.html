@@ -4,13 +4,14 @@
         // サマリーの更新
         update: function() {
             const totalCredits = registeredSubjects.reduce((sum, subject) => sum + subject.credits, 0);
-            const requiredCount = registeredSubjects.filter(s => s.type === '必修').length;
-            const electiveCount = registeredSubjects.filter(s => s.type === '選択').length;
+            const requiredCount = registeredSubjects.filter(s => s.type === Constants.SUBJECT.TYPES.REQUIRED).length;
+            const electiveCount = registeredSubjects.filter(s => s.type === Constants.SUBJECT.TYPES.ELECTIVE).length;
+            const progressPercentage = Math.round((totalCredits / Constants.GRADUATION.TOTAL_CREDITS_REQUIRED) * 100);
 
-            document.getElementById('total-credits').textContent = totalCredits;
-            document.getElementById('required-subjects').textContent = requiredCount;
-            document.getElementById('elective-subjects').textContent = electiveCount;
-            document.getElementById('graduation-progress').textContent = Math.round((totalCredits / 74) * 100) + '%';
+            document.getElementById(Constants.ELEMENTS.TOTAL_CREDITS).textContent = totalCredits;
+            document.getElementById(Constants.ELEMENTS.REQUIRED_SUBJECTS).textContent = requiredCount;
+            document.getElementById(Constants.ELEMENTS.ELECTIVE_SUBJECTS).textContent = electiveCount;
+            document.getElementById(Constants.ELEMENTS.GRADUATION_PROGRESS).textContent = progressPercentage + '%';
         },
 
         // 詳細な単位計算（将来の拡張用）

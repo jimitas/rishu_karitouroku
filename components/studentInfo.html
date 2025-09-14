@@ -3,32 +3,36 @@
     const StudentInfo = {
         // 学生情報の読み込み
         load: function() {
-            // 仮の学生ID（実際には認証システムから取得）
-            const studentId = 'S2023001';
+            const studentId = Constants.STUDENT.DEFAULT_ID;
 
-            google.script.run
-                .withSuccessHandler(function(student) {
+            DataLoader.getStudentInfo(
+                studentId,
+                (student) => {
                     if (student) {
                         studentData = student;
-                        StudentInfo.display(student);
+                        this.display(student);
                     } else {
-                        document.getElementById('student-info').innerHTML =
-                            '<div class="error">学生情報が見つかりません。</div>';
+                        DataLoader.showError(
+                            Constants.ELEMENTS.STUDENT_INFO,
+                            Constants.UI.ERROR_MESSAGES.STUDENT_NOT_FOUND
+                        );
                     }
-                })
-                .withFailureHandler(function(error) {
-                    document.getElementById('student-info').innerHTML =
-                        '<div class="error">エラー: ' + error.message + '</div>';
-                })
-                .getStudentInfo(studentId);
+                },
+                (error) => {
+                    DataLoader.showError(
+                        Constants.ELEMENTS.STUDENT_INFO,
+                        `${Constants.UI.ERROR_MESSAGES.GENERAL_ERROR}: ${error.message}`
+                    );
+                }
+            );
         },
 
         // 学生情報の表示
         display: function(student) {
-            document.getElementById('student-id').textContent = student.id;
-            document.getElementById('student-name').textContent = student.name;
-            document.getElementById('student-grade').textContent = student.grade + '年生';
-            document.getElementById('student-class').textContent = student.class + 'クラス';
+            document.getElementById(Constants.ELEMENTS.STUDENT_ID).textContent = student.id;
+            document.getElementById(Constants.ELEMENTS.STUDENT_NAME).textContent = student.name;
+            document.getElementById(Constants.ELEMENTS.STUDENT_GRADE).textContent = student.grade + '年生';
+            document.getElementById(Constants.ELEMENTS.STUDENT_CLASS).textContent = student.class + 'クラス';
         }
     };
 </script>
