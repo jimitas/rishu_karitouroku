@@ -1,0 +1,266 @@
+<script>
+    // グローバル変数
+    let studentData = {};
+    let subjectData = [];
+    let registeredSubjects = [];
+
+    // ページ読み込み時の初期化
+    document.addEventListener('DOMContentLoaded', function() {
+        loadStudentInfo();
+        loadSubjects();
+        loadRegistrations();
+    });
+
+    // タブ切り替え
+    function showTab(tabName) {
+        // すべてのタブコンテンツを非表示
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+
+        // すべてのタブボタンを非アクティブ
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.classList.remove('active');
+        });
+
+        // 選択されたタブを表示
+        document.getElementById(tabName + '-tab').classList.add('active');
+        event.target.classList.add('active');
+    }
+
+    // 学生情報の読み込み
+    function loadStudentInfo() {
+        // 仮の学生ID（実際には認証システムから取得）
+        const studentId = 'S2023001';
+
+        google.script.run
+            .withSuccessHandler(function(student) {
+                if (student) {
+                    studentData = student;
+                    document.getElementById('student-id').textContent = student.id;
+                    document.getElementById('student-name').textContent = student.name;
+                    document.getElementById('student-grade').textContent = student.grade + '年生';
+                    document.getElementById('student-class').textContent = student.class + 'クラス';
+                } else {
+                    document.getElementById('student-info').innerHTML =
+                        '<div class="error">学生情報が見つかりません。</div>';
+                }
+            })
+            .withFailureHandler(function(error) {
+                document.getElementById('student-info').innerHTML =
+                    '<div class="error">エラー: ' + error.message + '</div>';
+            })
+            .getStudentInfo(studentId);
+    }
+
+    // 科目情報の読み込み
+    function loadSubjects() {
+        const studentId = 'S2023001'; // 仮の学生ID
+
+        google.script.run
+            .withSuccessHandler(function(subjects) {
+                subjectData = subjects.map(subject => ({
+                    id: subject.id,
+                    name: subject.name,
+                    credits: subject.credits,
+                    grade: subject.targetGrade,
+                    type: subject.type,
+                    condition: subject.condition,
+                    available: true
+                }));
+
+                displayAvailableSubjects();
+                document.getElementById('loading-available').style.display = 'none';
+                document.getElementById('available-subjects').style.display = 'grid';
+            })
+            .withFailureHandler(function(error) {
+                document.getElementById('loading-available').innerHTML =
+                    '<div class="error">エラー: ' + error.message + '</div>';
+            })
+            .getAvailableSubjects(studentData.grade || '2', studentId);
+    }
+
+    // 履修登録情報の読み込み
+    function loadRegistrations() {
+        const studentId = 'S2023001'; // 仮の学生ID
+
+        // まず履修登録データを取得
+        google.script.run
+            .withSuccessHandler(function(registrations) {
+                // 次に科目詳細を取得
+                const subjectIds = registrations.map(reg => reg.subjectId);
+
+                if (subjectIds.length > 0) {
+                    google.script.run
+                        .withSuccessHandler(function(subjects) {
+                            registeredSubjects = subjects
+                                .filter(subject => subjectIds.includes(subject.id))
+                                .map(subject => ({
+                                    id: subject.id,
+                                    name: subject.name,
+                                    credits: subject.credits,
+                                    type: subject.type
+                                }));
+
+                            displayRegisteredSubjects();
+                            updateSummary();
+                            document.getElementById('loading-registered').style.display = 'none';
+                            document.getElementById('registered-subjects').style.display = 'grid';
+                        })
+                        .withFailureHandler(function(error) {
+                            document.getElementById('loading-registered').innerHTML =
+                                '<div class="error">科目情報の取得エラー: ' + error.message + '</div>';
+                        })
+                        .getSubjects();
+                } else {
+                    registeredSubjects = [];
+                    displayRegisteredSubjects();
+                    updateSummary();
+                    document.getElementById('loading-registered').style.display = 'none';
+                    document.getElementById('registered-subjects').style.display = 'grid';
+                }
+            })
+            .withFailureHandler(function(error) {
+                document.getElementById('loading-registered').innerHTML =
+                    '<div class="error">履修情報の取得エラー: ' + error.message + '</div>';
+            })
+            .getStudentRegistrations(studentId);
+    }
+
+    // 履修可能科目の表示
+    function displayAvailableSubjects() {
+        const container = document.getElementById('available-subjects');
+        container.innerHTML = '';
+
+        subjectData.forEach(subject => {
+            const isRegistered = registeredSubjects.some(reg => reg.id === subject.id);
+
+            const subjectCard = document.createElement('div');
+            subjectCard.className = `subject-card ${isRegistered ? 'registered' : ''}`;
+
+            subjectCard.innerHTML = `
+                <div class="status-badge ${isRegistered ? 'status-registered' : 'status-available'}">
+                    ${isRegistered ? '履修中' : '履修可能'}
+                </div>
+                <div class="subject-title">${subject.name}</div>
+                <div class="subject-info">
+                    <span class="info-tag">${subject.credits}単位</span>
+                    <span class="info-tag ${subject.type === '必修' ? 'required' : 'elective'}">
+                        ${subject.type}
+                    </span>
+                    <span class="info-tag">${subject.grade}年生対象</span>
+                </div>
+                ${subject.condition !== 'なし' ? `
+                    <div class="subject-condition">
+                        履修条件: ${subject.condition}
+                    </div>
+                ` : ''}
+                <div class="action-buttons">
+                    ${isRegistered ? `
+                        <button class="btn btn-danger" onclick="unregisterSubject('${subject.id}')">
+                            履修取消
+                        </button>
+                    ` : `
+                        <button class="btn btn-primary" onclick="registerSubject('${subject.id}')">
+                            履修登録
+                        </button>
+                    `}
+                </div>
+            `;
+
+            container.appendChild(subjectCard);
+        });
+    }
+
+    // 履修中科目の表示
+    function displayRegisteredSubjects() {
+        const container = document.getElementById('registered-subjects');
+        container.innerHTML = '';
+
+        if (registeredSubjects.length === 0) {
+            container.innerHTML = '<p style="text-align: center; color: #666; grid-column: 1/-1;">履修中の科目はありません</p>';
+            return;
+        }
+
+        registeredSubjects.forEach(subject => {
+            const subjectCard = document.createElement('div');
+            subjectCard.className = 'subject-card registered';
+
+            subjectCard.innerHTML = `
+                <div class="status-badge status-registered">履修中</div>
+                <div class="subject-title">${subject.name}</div>
+                <div class="subject-info">
+                    <span class="info-tag">${subject.credits}単位</span>
+                    <span class="info-tag ${subject.type === '必修' ? 'required' : 'elective'}">
+                        ${subject.type}
+                    </span>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-danger" onclick="unregisterSubject('${subject.id}')">
+                        履修取消
+                    </button>
+                </div>
+            `;
+
+            container.appendChild(subjectCard);
+        });
+    }
+
+    // サマリーの更新
+    function updateSummary() {
+        const totalCredits = registeredSubjects.reduce((sum, subject) => sum + subject.credits, 0);
+        const requiredCount = registeredSubjects.filter(s => s.type === '必修').length;
+        const electiveCount = registeredSubjects.filter(s => s.type === '選択').length;
+
+        document.getElementById('total-credits').textContent = totalCredits;
+        document.getElementById('required-subjects').textContent = requiredCount;
+        document.getElementById('elective-subjects').textContent = electiveCount;
+        document.getElementById('graduation-progress').textContent = Math.round((totalCredits / 74) * 100) + '%';
+    }
+
+    // 履修登録
+    function registerSubject(subjectId) {
+        const studentId = 'S2023001'; // 仮の学生ID
+        const subject = subjectData.find(s => s.id === subjectId);
+
+        if (subject && confirm(`${subject.name}を履修登録しますか？`)) {
+            google.script.run
+                .withSuccessHandler(function(result) {
+                    if (result.success) {
+                        alert(result.message);
+                        loadRegistrations(); // 履修情報を再読み込み
+                        loadSubjects(); // 科目情報を再読み込み
+                    } else {
+                        alert('エラー: ' + result.message);
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    alert('エラーが発生しました: ' + error.message);
+                })
+                .registerSubject(studentId, subjectId);
+        }
+    }
+
+    // 履修取消
+    function unregisterSubject(subjectId) {
+        const studentId = 'S2023001'; // 仮の学生ID
+        const subject = registeredSubjects.find(s => s.id === subjectId);
+
+        if (subject && confirm(`${subject.name}の履修を取り消しますか？`)) {
+            google.script.run
+                .withSuccessHandler(function(result) {
+                    if (result.success) {
+                        alert(result.message);
+                        loadRegistrations(); // 履修情報を再読み込み
+                        loadSubjects(); // 科目情報を再読み込み
+                    } else {
+                        alert('エラー: ' + result.message);
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    alert('エラーが発生しました: ' + error.message);
+                })
+                .unregisterSubject(studentId, subjectId);
+        }
+    }
+</script>

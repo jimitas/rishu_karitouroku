@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>履修登録システム</title>
+    <?!= include('styles'); ?>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>履修登録システム</h1>
+            <p class="subtitle">通信制高校 履修科目選択</p>
+        </header>
+
+        <div id="student-info" class="student-info">
+            <h3>学生情報</h3>
+            <div class="student-details">
+                <div class="detail-item">
+                    <span class="detail-label">学生ID:</span>
+                    <span id="student-id">読み込み中...</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">氏名:</span>
+                    <span id="student-name">読み込み中...</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">学年:</span>
+                    <span id="student-grade">読み込み中...</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">クラス:</span>
+                    <span id="student-class">読み込み中...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-container">
+            <button class="tab-button active" onclick="showTab('available')">履修可能科目</button>
+            <button class="tab-button" onclick="showTab('registered')">履修中科目</button>
+            <button class="tab-button" onclick="showTab('summary')">履修状況</button>
+        </div>
+
+        <div class="content-area">
+            <div id="available-tab" class="tab-content active">
+                <h2>履修可能科目</h2>
+                <div id="loading-available" class="loading">科目情報を読み込み中...</div>
+                <div id="available-subjects" class="subject-grid" style="display: none;"></div>
+            </div>
+
+            <div id="registered-tab" class="tab-content">
+                <h2>履修中科目</h2>
+                <div id="loading-registered" class="loading">履修情報を読み込み中...</div>
+                <div id="registered-subjects" class="subject-grid" style="display: none;"></div>
+            </div>
+
+            <div id="summary-tab" class="tab-content">
+                <h2>履修状況サマリー</h2>
+                <div class="summary-section">
+                    <div class="summary-grid">
+                        <div class="summary-item">
+                            <div class="summary-number" id="total-credits">0</div>
+                            <div class="summary-label">取得予定単位</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-number" id="required-subjects">0</div>
+                            <div class="summary-label">必修科目</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-number" id="elective-subjects">0</div>
+                            <div class="summary-label">選択科目</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-number" id="graduation-progress">0%</div>
+                            <div class="summary-label">卒業要件達成度</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <?!= include('scripts'); ?>
+</body>
+</html>
