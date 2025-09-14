@@ -56,4 +56,13 @@
     function refreshData() {
         App.refresh();
     }
+
+    // タブ切り替え用のグローバル関数（HTMLから呼び出し用）
+    function showTab(tabName) {
+        if (window.TabNavigation && TabNavigation.showTab) {
+            TabNavigation.showTab(tabName);
+        } else {
+            console.error('TabNavigationコンポーネントが読み込まれていません');
+        }
+    }
 </script>
