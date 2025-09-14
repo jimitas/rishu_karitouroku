@@ -35,4 +35,8 @@
             document.getElementById(Constants.ELEMENTS.STUDENT_CLASS).textContent = student.class + 'クラス';
         }
     };
+
+    // グローバルスコープに登録
+    window.StudentInfo = StudentInfo;
+    console.log('✅ StudentInfo コンポーネント登録完了');
 </script>

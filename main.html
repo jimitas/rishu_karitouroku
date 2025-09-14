@@ -16,29 +16,55 @@
 
         // アプリケーション初期化
         init: function () {
-            console.log('履修登録システム開始...');
+            console.log('🚀 履修登録システム開始...');
+            console.log('📋 現在の読み込み状態:', document.readyState);
 
             // DOM読み込み完了後の処理
             document.addEventListener('DOMContentLoaded', () => {
+                console.log('✅ DOMContentLoaded: App初期化開始');
                 this.setupEventListeners();
                 this.initializeAuth();
                 TabNavigation.init();
             });
+
+            // 既にDOMが読み込み済みの場合
+            if (document.readyState === 'loading') {
+                console.log('⏳ DOM読み込み待機中...');
+            } else {
+                console.log('🔄 DOMは既に読み込み済み、即座に初期化実行');
+                this.setupEventListeners();
+                this.initializeAuth();
+                TabNavigation.init();
+            }
         },
 
         // 認証システムの初期化
         initializeAuth: function () {
+            console.log('🔐 認証システム初期化開始');
+            console.log('🔍 Auth オブジェクト確認:', !!window.Auth);
+
+            if (!window.Auth) {
+                console.error('❌ Authコンポーネントが読み込まれていません！');
+                alert('システムエラー: 認証コンポーネントが読み込まれていません。');
+                return;
+            }
+
             // 認証状態変更時のコールバック設定
             Auth.onAuthStateChanged = (authState) => {
+                console.log('📢 認証状態変更通知:', authState);
                 if (authState.isAuthenticated && authState.studentData) {
+                    console.log('✅ 認証成功 - アプリ開始');
                     // 認証成功時：学生データを設定してアプリを開始
                     this.setState('studentData', authState.studentData);
                     this.setState('currentUserEmail', authState.currentUser.email);
                     this.loadInitialData();
+                } else {
+                    console.log('❌ 認証失敗またはデータ不足');
                 }
             };
 
             // 認証開始
+            console.log('🚀 Auth.init() 呼び出し');
             Auth.init();
         },
 

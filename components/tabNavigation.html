@@ -56,4 +56,8 @@
     function showTab(tabName) {
         TabNavigation.showTab(tabName);
     }
+
+    // グローバルスコープに登録
+    window.TabNavigation = TabNavigation;
+    console.log('✅ TabNavigation コンポーネント登録完了');
 </script>

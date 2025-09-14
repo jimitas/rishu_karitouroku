@@ -176,4 +176,8 @@
             return Promise.all(promises);
         }
     };
+
+    // グローバルスコープに登録
+    window.DataLoader = DataLoader;
+    console.log('✅ DataLoader コンポーネント登録完了');
 </script>

@@ -1,14 +1,36 @@
 <!-- ユーティリティ関数の読み込み -->
-<?!= include('utils/constants'); ?>
-<?!= include('utils/dataLoader'); ?>
+<script>console.log('🔧 Constants読み込み開始');</script>
+<?!= include('utils\\constants'); ?>
+<script>console.log('🔧 Constants読み込み完了');</script>
+
+<script>console.log('🔧 DataLoader読み込み開始');</script>
+<?!= include('utils\\dataLoader'); ?>
+<script>console.log('🔧 DataLoader読み込み完了');</script>
 
 <!-- JavaScriptコンポーネントの読み込み -->
-<?!= include('components/auth'); ?>
-<?!= include('components/studentInfo'); ?>
-<?!= include('components/subjectList'); ?>
-<?!= include('components/registration'); ?>
-<?!= include('components/summary'); ?>
-<?!= include('components/tabNavigation'); ?>
+<script>console.log('🔧 Auth読み込み開始');</script>
+<?!= include('components\\auth'); ?>
+<script>console.log('🔧 Auth読み込み完了');</script>
+
+<script>console.log('🔧 StudentInfo読み込み開始');</script>
+<?!= include('components\\studentInfo'); ?>
+<script>console.log('🔧 StudentInfo読み込み完了');</script>
+
+<script>console.log('🔧 SubjectList読み込み開始');</script>
+<?!= include('components\\subjectList'); ?>
+<script>console.log('🔧 SubjectList読み込み完了');</script>
+
+<script>console.log('🔧 Registration読み込み開始');</script>
+<?!= include('components\\registration'); ?>
+<script>console.log('🔧 Registration読み込み完了');</script>
+
+<script>console.log('🔧 Summary読み込み開始');</script>
+<?!= include('components\\summary'); ?>
+<script>console.log('🔧 Summary読み込み完了');</script>
+
+<script>console.log('🔧 TabNavigation読み込み開始');</script>
+<?!= include('components\\tabNavigation'); ?>
+<script>console.log('🔧 TabNavigation読み込み完了');</script>
 
 <!-- メインアプリケーション -->
 <?!= include('main'); ?>
@@ -77,8 +99,18 @@
 
     // DOM読み込み完了後に実行される初期化
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('DOMContentLoaded: すべてのスクリプトが読み込まれました');
-        console.log('TabNavigation available:', !!window.TabNavigation);
+        console.log('🔧 DOMContentLoaded: すべてのスクリプトが読み込まれました');
+
+        // 各コンポーネントの読み込み状況確認
+        console.log('📦 コンポーネント読み込み状況:');
+        console.log('  - Auth:', !!window.Auth);
+        console.log('  - App:', !!window.App);
+        console.log('  - DataLoader:', !!window.DataLoader);
+        console.log('  - TabNavigation:', !!window.TabNavigation);
+        console.log('  - StudentInfo:', !!window.StudentInfo);
+        console.log('  - Registration:', !!window.Registration);
+        console.log('  - Summary:', !!window.Summary);
+        console.log('  - SubjectList:', !!window.SubjectList);
 
         // TabNavigationが利用可能かチェック
         if (window.TabNavigation) {
