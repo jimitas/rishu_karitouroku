@@ -15,7 +15,7 @@
         },
 
         // アプリケーション初期化
-        init: function() {
+        init: function () {
             console.log('履修登録システム開始...');
 
             // DOM読み込み完了後の処理
@@ -27,7 +27,7 @@
         },
 
         // 認証システムの初期化
-        initializeAuth: function() {
+        initializeAuth: function () {
             // 認証状態変更時のコールバック設定
             Auth.onAuthStateChanged = (authState) => {
                 if (authState.isAuthenticated && authState.studentData) {
@@ -43,7 +43,7 @@
         },
 
         // イベントリスナーの設定
-        setupEventListeners: function() {
+        setupEventListeners: function () {
             // ページ離脱時の警告（未保存の変更がある場合）
             window.addEventListener('beforeunload', (e) => {
                 if (this.hasUnsavedChanges()) {
@@ -63,7 +63,7 @@
         },
 
         // 初期データの読み込み
-        loadInitialData: function() {
+        loadInitialData: function () {
             this.state.isLoading.student = true;
             this.state.isLoading.subjects = true;
             this.state.isLoading.registrations = true;
@@ -83,15 +83,17 @@
         },
 
         // 学生データの読み込み（認証後）
-        loadStudentData: function() {
+        loadStudentData: function () {
             return new Promise((resolve, reject) => {
                 // 認証済みの学生データが既にあるかチェック
                 if (this.state.studentData && this.state.studentData.id) {
+                    console.log('学生データを表示中:', this.state.studentData);
                     StudentInfo.display(this.state.studentData);
                     this.state.isLoading.student = false;
                     resolve(this.state.studentData);
                 } else {
                     // 認証されていない場合はエラー
+                    console.error('学生情報が認証されていません');
                     this.state.isLoading.student = false;
                     reject(new Error('学生情報が認証されていません'));
                 }
@@ -99,12 +101,26 @@
         },
 
         // 科目データの読み込み
-        loadSubjectData: function() {
+        loadSubjectData: function () {
             return new Promise((resolve, reject) => {
+                // 学生データが読み込まれているかチェック
+                if (!this.state.studentData || !this.state.studentData.id) {
+                    console.error('学生データが読み込まれていません');
+                    this.state.isLoading.subjects = false;
+                    reject(new Error('学生データが読み込まれていません'));
+                    return;
+                }
+
+                console.log('科目データを読み込み中...', {
+                    grade: this.state.studentData.grade,
+                    studentId: this.state.studentData.id
+                });
+
                 DataLoader.getAvailableSubjects(
                     this.state.studentData.grade || '2',
-                    Constants.STUDENT.DEFAULT_ID,
+                    this.state.studentData.id, // 実際の学生IDを使用
                     (subjects) => {
+                        console.log('科目データ取得成功:', subjects);
                         const formattedSubjects = subjects.map(subject => ({
                             id: subject.id,
                             name: subject.name,
@@ -120,6 +136,7 @@
                         resolve(formattedSubjects);
                     },
                     (error) => {
+                        console.error('科目データ読み込みエラー:', error);
                         this.state.isLoading.subjects = false;
                         reject(error);
                     }
@@ -128,17 +145,22 @@
         },
 
         // 履修登録データの読み込み
-        loadRegistrationData: function() {
+        loadRegistrationData: function () {
             return new Promise((resolve, reject) => {
-                const studentId = this.state.studentData.id;
+                const studentId = this.state.studentData ? this.state.studentData.id : null;
                 if (!studentId) {
+                    console.error('学生情報が読み込まれていません');
+                    this.state.isLoading.registrations = false;
                     reject(new Error('学生情報が読み込まれていません'));
                     return;
                 }
 
+                console.log('履修登録データを読み込み中...', { studentId });
+
                 DataLoader.getStudentRegistrations(
                     studentId,
                     (registrations) => {
+                        console.log('履修登録データ取得成功:', registrations);
                         // 新しいデータ構造では、registrations配列に既に科目名とステータスが含まれている
                         const registeredSubjects = registrations.map(reg => ({
                             id: `REG_${reg.subjectName}`, // 科目名から一意IDを生成
@@ -153,6 +175,7 @@
                         resolve(registeredSubjects);
                     },
                     (error) => {
+                        console.error('履修登録データ読み込みエラー:', error);
                         this.state.isLoading.registrations = false;
                         reject(error);
                     }
@@ -161,7 +184,7 @@
         },
 
         // 科目名から単位数を推定するヘルパー関数
-        getSubjectCredits: function(subjectName) {
+        getSubjectCredits: function (subjectName) {
             // 一般的な単位数の推定（後で詳細設定可能）
             if (subjectName.includes('体育')) return 1;
             if (subjectName.includes('保健')) return 1;
@@ -171,7 +194,7 @@
         },
 
         // 科目名から種別を推定するヘルパー関数
-        getSubjectType: function(subjectName) {
+        getSubjectType: function (subjectName) {
             const requiredSubjects = ['現代の国語', '歴史総合', '地理総合', '数学Ⅰ', '科学と人間生活', '体育Ⅰ', '英語コミュニケーションⅠ', '情報Ⅰ'];
             if (requiredSubjects.some(req => subjectName.includes(req.replace(/ｺﾐｭﾆｹｰｼｮﾝ/g, 'コミュニケーション')))) {
                 return '必修';
@@ -180,7 +203,7 @@
         },
 
         // 全データ読み込み完了時の処理
-        onDataLoadComplete: function() {
+        onDataLoadComplete: function () {
             // ローディング状態を非表示
             DataLoader.hideLoading(Constants.ELEMENTS.LOADING_AVAILABLE);
             DataLoader.hideLoading(Constants.ELEMENTS.LOADING_REGISTERED);
@@ -196,7 +219,7 @@
         },
 
         // 状態の更新（ReactのsetStateのような機能）
-        setState: function(key, value) {
+        setState: function (key, value) {
             const oldValue = this.state[key];
             this.state[key] = value;
 
@@ -208,7 +231,7 @@
         },
 
         // 状態変更時の処理
-        onStateChange: function(key, newValue, oldValue) {
+        onStateChange: function (key, newValue, oldValue) {
             switch (key) {
                 case 'registeredSubjects':
                     // グローバル変数も更新（互換性維持）
@@ -224,7 +247,7 @@
         },
 
         // データの手動リフレッシュ
-        refresh: function() {
+        refresh: function () {
             console.log('データをリフレッシュ中...');
             if (Auth.isReady()) {
                 this.loadInitialData();
@@ -234,16 +257,38 @@
         },
 
         // グローバルエラーハンドラー
-        handleGlobalError: function(error) {
+        handleGlobalError: function (error) {
             console.error('アプリケーションエラー:', error);
+
+            // ローディング状態をリセット
+            this.state.isLoading.student = false;
+            this.state.isLoading.subjects = false;
+            this.state.isLoading.registrations = false;
 
             // ユーザーに分かりやすいエラーメッセージを表示
             const errorMessage = this.getErrorMessage(error);
-            alert(`エラーが発生しました: ${errorMessage}`);
+
+            // エラー表示エリアに表示
+            const errorContainer = document.getElementById('auth-error-container');
+            if (errorContainer) {
+                errorContainer.innerHTML = `
+                    <div class="auth-error">
+                        <h3>⚠️ エラーが発生しました</h3>
+                        <p>${errorMessage}</p>
+                        <div class="auth-error-actions">
+                            <button onclick="App.refresh()" class="retry-button">再試行</button>
+                            <button onclick="location.reload()" class="help-button">ページを再読み込み</button>
+                        </div>
+                    </div>
+                `;
+                errorContainer.style.display = 'block';
+            } else {
+                alert(`エラーが発生しました: ${errorMessage}`);
+            }
         },
 
         // エラーメッセージの取得
-        getErrorMessage: function(error) {
+        getErrorMessage: function (error) {
             if (error.message) {
                 return error.message;
             }
@@ -252,22 +297,22 @@
 
 
         // 未保存の変更があるかチェック
-        hasUnsavedChanges: function() {
+        hasUnsavedChanges: function () {
             // 現在は常にfalse（将来の機能拡張用）
             return false;
         },
 
         // アプリケーション状態の取得（デバッグ用）
-        getState: function() {
+        getState: function () {
             return { ...this.state };
         },
 
         // パフォーマンス計測
-        startPerformanceMeasure: function(name) {
+        startPerformanceMeasure: function (name) {
             performance.mark(`${name}-start`);
         },
 
-        endPerformanceMeasure: function(name) {
+        endPerformanceMeasure: function (name) {
             performance.mark(`${name}-end`);
             performance.measure(name, `${name}-start`, `${name}-end`);
             const measure = performance.getEntriesByName(name)[0];

@@ -10,20 +10,24 @@
         },
 
         // 認証初期化
-        init: function() {
+        init: function () {
             console.log('認証システムを初期化中...');
             this.authenticate();
         },
 
         // 認証処理
-        authenticate: function() {
+        authenticate: function () {
             this.state.isLoading = true;
             this.showLoadingMessage('ユーザー認証中...');
 
             return new Promise((resolve, reject) => {
+                console.log('認証プロセス開始...');
+
                 // まずログインユーザーのメールアドレスを取得
                 DataLoader.getCurrentUserEmail(
                     (userResult) => {
+                        console.log('ユーザー認証結果:', userResult);
+
                         if (userResult.success) {
                             this.state.currentUser = {
                                 email: userResult.email
@@ -36,12 +40,13 @@
                                     this.state.isAuthenticated = true;
                                     this.state.studentData = studentData;
                                     this.state.isLoading = false;
-                                    console.log('学生認証成功:', studentData.name);
+                                    console.log('学生認証成功:', studentData);
                                     this.hideLoadingMessage();
                                     this.notifyAuthStateChanged();
                                     resolve(studentData);
                                 })
                                 .catch((error) => {
+                                    console.error('学生情報取得エラー:', error);
                                     this.state.isLoading = false;
                                     this.handleAuthenticationError(error.message);
                                     reject(error);
@@ -49,13 +54,15 @@
                         } else {
                             this.state.isLoading = false;
                             const errorMsg = userResult.message || 'ユーザー認証に失敗しました';
+                            console.error('ユーザー認証失敗:', errorMsg);
                             this.handleAuthenticationError(errorMsg);
                             reject(new Error(errorMsg));
                         }
                     },
                     (error) => {
+                        console.error('GAS呼び出しエラー:', error);
                         this.state.isLoading = false;
-                        const errorMsg = 'ユーザー認証に失敗しました: ' + error.message;
+                        const errorMsg = 'ユーザー認証に失敗しました: ' + (error.message || error);
                         this.handleAuthenticationError(errorMsg);
                         reject(error);
                     }
@@ -64,7 +71,7 @@
         },
 
         // メールアドレスから学生情報を取得
-        getStudentByEmail: function(email) {
+        getStudentByEmail: function (email) {
             return new Promise((resolve, reject) => {
                 DataLoader.getStudentInfoByEmail(
                     email,
@@ -83,13 +90,13 @@
         },
 
         // 認証エラーの処理
-        handleAuthenticationError: function(message) {
+        handleAuthenticationError: function (message) {
             console.error('認証エラー:', message);
             this.showAuthenticationError(message);
         },
 
         // 認証エラー画面の表示
-        showAuthenticationError: function(message) {
+        showAuthenticationError: function (message) {
             const errorContainer = document.getElementById('auth-error-container');
             if (errorContainer) {
                 errorContainer.innerHTML = `
@@ -111,7 +118,7 @@
         },
 
         // ローディングメッセージの表示
-        showLoadingMessage: function(message) {
+        showLoadingMessage: function (message) {
             const errorContainer = document.getElementById('auth-error-container');
             if (errorContainer) {
                 errorContainer.innerHTML = `
@@ -127,7 +134,7 @@
         },
 
         // ローディングメッセージを非表示
-        hideLoadingMessage: function() {
+        hideLoadingMessage: function () {
             const errorContainer = document.getElementById('auth-error-container');
             if (errorContainer) {
                 errorContainer.style.display = 'none';
@@ -137,7 +144,7 @@
         },
 
         // メインコンテンツを非表示
-        hideMainContent: function() {
+        hideMainContent: function () {
             const contentArea = document.getElementById('main-content');
             if (contentArea) {
                 contentArea.style.display = 'none';
@@ -145,7 +152,7 @@
         },
 
         // メインコンテンツを表示
-        showMainContent: function() {
+        showMainContent: function () {
             const contentArea = document.getElementById('main-content');
             if (contentArea) {
                 contentArea.style.display = 'block';
@@ -153,7 +160,7 @@
         },
 
         // 認証の再試行
-        retry: function() {
+        retry: function () {
             console.log('認証を再試行中...');
             this.state.isAuthenticated = false;
             this.state.currentUser = null;
@@ -162,7 +169,7 @@
         },
 
         // ヘルプ表示
-        showHelp: function() {
+        showHelp: function () {
             alert(`ヘルプ情報:
 
 1. 学校のGoogleアカウントでログインしていることを確認してください
@@ -173,7 +180,7 @@
         },
 
         // 現在の認証状態を取得
-        getAuthState: function() {
+        getAuthState: function () {
             return {
                 isAuthenticated: this.state.isAuthenticated,
                 currentUser: this.state.currentUser,
@@ -183,17 +190,17 @@
         },
 
         // 学生IDを取得（他のコンポーネント用）
-        getCurrentStudentId: function() {
+        getCurrentStudentId: function () {
             return this.state.studentData ? this.state.studentData.id : null;
         },
 
         // 学生情報を取得（他のコンポーネント用）
-        getCurrentStudentData: function() {
+        getCurrentStudentData: function () {
             return this.state.studentData;
         },
 
         // 認証が完了しているかチェック
-        isReady: function() {
+        isReady: function () {
             return this.state.isAuthenticated && !this.state.isLoading;
         },
 
@@ -201,7 +208,7 @@
         onAuthStateChanged: null,
 
         // 認証状態変更を通知
-        notifyAuthStateChanged: function() {
+        notifyAuthStateChanged: function () {
             if (this.onAuthStateChanged && typeof this.onAuthStateChanged === 'function') {
                 this.onAuthStateChanged(this.getAuthState());
             }
